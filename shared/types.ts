@@ -10,6 +10,8 @@ export interface SkinResult { scores: SkinScore[]; overlayUrl?: string }
 export interface ToneResult { skin: string; lip?: string; eye?: string; eyeName?: string; hair?: string; hairName?: string }
 
 export type Mode = "demo" | "live";
+/** Where a result came from: a live call, a recorded real YouCam result for the sample, or demo fixtures. */
+export type ResultMode = Mode | "recorded";
 export type TaskKind = "skin" | "tone" | "cloth";
 export interface TaskPoll<T = unknown> { status: "running" | "success" | "error"; result?: T; error?: string }
 export interface TryOnResult { url: string }

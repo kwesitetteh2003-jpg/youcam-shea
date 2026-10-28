@@ -1,9 +1,11 @@
-import type { Mode, Plan, SkinResult, TaskKind, TaskPoll, ToneResult, TryOnResult } from "../../shared/types";
+import type { Mode, Plan, ResultMode, SkinResult, TaskKind, TaskPoll, ToneResult, TryOnResult } from "../../shared/types";
 import { plan as localPlan } from "../../shared/agent";
 
+/** The server says: show the labelled sample instead (units used up, a cap hit, or YouCam errored). */
+export class FallbackError extends Error {}
 async function j<T>(r: Response): Promise<T> {
   const b = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error((b as { error?: string }).error || `Request failed (${r.status})`);
+  if (!r.ok) { const m = (b as { error?: string }).error || `Request failed (${r.status})`; throw (b as { fallback?: boolean }).fallback ? new FallbackError(m) : new Error(m); }
   return b as T;
 }
 export const getStatus = () => fetch("/api/status").then((r) => j<{ mode: Mode; apis: string[] }>(r));
@@ -27,15 +29,16 @@ async function pollTask<T>(kind: TaskKind, id: string, timeoutMs = 120000): Prom
     await sleep(2200);
     const p = await fetch(`/api/task?kind=${kind}&id=${encodeURIComponent(id)}`).then((r) => j<TaskPoll<T>>(r));
     if (p.status === "success") return p.result as T;
-    if (p.status === "error") throw new Error(p.error || "YouCam task failed");
+    if (p.status === "error") throw new FallbackError(p.error || "YouCam task failed");
   }
-  throw new Error("YouCam took too long. Try again.");
+  throw new FallbackError("YouCam took too long.");
 }
 
-export async function scan(image: string | undefined): Promise<{ mode: Mode; skin: SkinResult; tone: ToneResult }> {
-  const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image }) })
-    .then((x) => j<{ mode: Mode; skin?: TaskPoll<SkinResult>; tone?: TaskPoll<ToneResult>; skinTask?: string; toneTask?: string }>(x));
-  if (r.mode === "demo") return { mode: "demo", skin: r.skin!.result!, tone: r.tone!.result! };
+/** image: a JPEG data URL of the user's photo, or undefined for the sample (which never spends units). */
+export async function scan(image: string | undefined): Promise<{ mode: ResultMode; skin: SkinResult; tone: ToneResult; recordedAt?: string }> {
+  const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(image ? { image } : { sample: true }) })
+    .then((x) => j<{ mode: ResultMode; recordedAt?: string; skin?: TaskPoll<SkinResult>; tone?: TaskPoll<ToneResult>; skinTask?: string; toneTask?: string }>(x));
+  if (r.mode !== "live") return { mode: r.mode, skin: r.skin!.result!, tone: r.tone!.result!, recordedAt: r.recordedAt };
   const [skin, tone] = await Promise.all([pollTask<SkinResult>("skin", r.skinTask!), pollTask<ToneResult>("tone", r.toneTask!)]);
   return { mode: "live", skin, tone };
 }

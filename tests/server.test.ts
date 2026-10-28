@@ -25,10 +25,11 @@ describe("api (demo)", () => {
 
 describe("api (live, mocked YouCam)", () => {
   it("uploads, starts skin + tone tasks, polls and never leaks the key", async () => {
-    const calls: { url: string; auth?: string; body?: any }[] = [];
+    const calls: { url: string; auth?: string; body?: any }[] = []; let credit = 100;
     const fake: typeof fetch = async (u: any, init: any = {}) => {
       const url = String(u); calls.push({ url, auth: init.headers?.Authorization, body: init.body && typeof init.body === "string" ? JSON.parse(init.body) : undefined });
       const j = (d: unknown) => new Response(JSON.stringify({ status: 200, data: d }), { status: 200 });
+      if (url.endsWith("/s2s/v1.0/client/credit")) return new Response(JSON.stringify({ status: 200, results: [{ amount: credit, expiry: Date.now() + 1e9 }] }), { status: 200 });
       if (url.endsWith("/s2s/v2.0/file")) return j({ files: [{ file_id: "F1", requests: [{ method: "PUT", url: "https://s3.example/put", headers: { "Content-Type": "image/jpeg" } }] }] });
       if (url === "https://s3.example/put") return new Response("", { status: 200 });
       if (url.endsWith("/task/skin-analysis")) return j({ task_id: "S1" });
@@ -44,9 +45,20 @@ describe("api (live, mocked YouCam)", () => {
     const skinCall = calls.find((c) => c.url.endsWith("/task/skin-analysis"))!;
     expect(skinCall.auth).toBe("Bearer sk-test");
     expect(skinCall.body.src_file_id).toBe("F1"); expect(skinCall.body.dst_actions).toHaveLength(8);
-    // second scan of the same image reuses the cached upload
-    await fetch(s.url + "/api/scan", { method: "POST", body: JSON.stringify({ image: jpeg }) });
+    // a second scan of the same image reuses the same tasks: no new upload, no new paid task
+    const again = await (await fetch(s.url + "/api/scan", { method: "POST", body: JSON.stringify({ image: jpeg }) })).json();
+    expect(again).toMatchObject({ skinTask: "S1", toneTask: "T1", cached: "1" });
     expect(calls.filter((c) => c.url.endsWith("/s2s/v2.0/file"))).toHaveLength(1);
+    expect(calls.filter((c) => c.url.endsWith("/task/skin-analysis"))).toHaveLength(1);
+    // the sample never calls YouCam
+    const n = calls.length;
+    const sample = await (await fetch(s.url + "/api/scan", { method: "POST", body: JSON.stringify({ sample: true }) })).json();
+    expect(["demo", "recorded"]).toContain(sample.mode); expect(calls.length).toBe(n);
+    // a new photo with too few units left: graceful fallback, no paid task started
+    credit = 10;
+    const low = await fetch(s.url + "/api/scan", { method: "POST", body: JSON.stringify({ image: "data:image/jpeg;base64," + Buffer.alloc(4000, 9).toString("base64") }) });
+    expect(low.status).toBe(402); expect(await low.json()).toMatchObject({ fallback: true });
+    expect(calls.filter((c) => c.url.endsWith("/task/skin-analysis"))).toHaveLength(1);
     const p = await (await fetch(s.url + "/api/task?kind=skin&id=S1")).json();
     expect(p).toMatchObject({ status: "success", result: { scores: [{ concern: "acne", score: 70 }] } });
     s.close();
@@ -58,9 +70,32 @@ describe("api (live, mocked YouCam)", () => {
   });
 });
 
+describe("caps", () => {
+  it("enforces the per-device unit cap", async () => {
+    let tasks = 0;
+    const fake: typeof fetch = async (u: any) => {
+      const url = String(u); const j = (d: unknown) => new Response(JSON.stringify({ status: 200, data: d }), { status: 200 });
+      if (url.endsWith("/client/credit")) return new Response(JSON.stringify({ results: [{ amount: 999 }] }));
+      if (url.endsWith("/s2s/v2.0/file")) return j({ files: [{ file_id: "F" + Math.random(), requests: [{ url: "https://s3.example/put" }] }] });
+      if (url === "https://s3.example/put") return new Response("");
+      tasks++; return j({ task_id: "T" + tasks });
+    };
+    const cfg = readConfig({ YOUCAM_API_KEY: "k", YOUCAM_PER_IP_DAILY_UNITS: "70" });
+    const s = await serve(createHandler(cfg, { youcam: new YouCam({ apiKey: "k", base: "https://yc.example" }, fake) }));
+    const img = (b: number) => "data:image/jpeg;base64," + Buffer.alloc(4000, b).toString("base64");
+    expect((await fetch(s.url + "/api/scan", { method: "POST", body: JSON.stringify({ image: img(1) }) })).status).toBe(200);
+    expect((await fetch(s.url + "/api/scan", { method: "POST", body: JSON.stringify({ image: img(2) }) })).status).toBe(200);
+    const third = await fetch(s.url + "/api/scan", { method: "POST", body: JSON.stringify({ image: img(3) }) });
+    expect(third.status).toBe(429); expect((await third.json()).fallback).toBe(true);
+    s.close();
+  });
+});
+
 describe("parsers", () => {
   it("parses HD-prefixed skin output and tone colours", () => {
     expect(parseSkin({ output: [{ type: "hd_texture", ui_score: 68.4 }] }).scores[0]).toMatchObject({ concern: "texture", score: 68 });
-    expect(parseTone({ color: { skin_color: "#b9947c" } }).skin).toBe("#b9947c");
+    expect(parseTone({ color: { skin_color: "#b9947c" } }).skin).toBe("#B9947C");
+    expect(parseSkin({ output: [{ type: "pore", ui_score: 80, mask_urls: "u" }] }).scores[0].maskUrl).toBe("u");
+    expect(() => parseSkin({ output: [] })).toThrow();
   });
 });

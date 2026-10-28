@@ -3,12 +3,13 @@ import { useRef, useState } from "react";
 import type { GarmentPick, Mode } from "../../shared/types";
 import { rankGarments } from "../../shared/agent";
 import { DEMO_TONE } from "../../shared/fixtures";
-import { tryOn, toJpegDataUrl } from "../lib/api";
+import { RECORDED_TRYON } from "../../shared/recorded";
+import { FallbackError, tryOn, toJpegDataUrl } from "../lib/api";
 import { ghs } from "../lib/format";
 import { Credit, Photo, photoSet } from "./Photo";
 import { Reveal } from "./Reveal";
 
-type State = { id: string; status: "running" | "done" | "needs_key" | "error"; url?: string; error?: string };
+type State = { id: string; status: "running" | "done" | "needs_key" | "error"; url?: string; error?: string; recorded?: boolean };
 
 export function TryOn({ picks, skin, mode }: { picks?: GarmentPick[]; skin?: string; mode: Mode | "unknown" }) {
   const list = picks ?? rankGarments(DEMO_TONE.skin);
@@ -28,7 +29,12 @@ export function TryOn({ picks, skin, mode }: { picks?: GarmentPick[]; skin?: str
       const [personImg, garmentImg] = live ? await Promise.all([toJpegDataUrl(person.file ?? "/src/body.jpg"), toJpegDataUrl(`/src/${p.garment.id}.jpg`)]) : ["", ""];
       const r = await tryOn(personImg, garmentImg, p.garment.category);
       setState(r.mode === "demo" ? { id: p.garment.id, status: "needs_key" } : { id: p.garment.id, status: "done", url: r.result!.url });
-    } catch (e) { setState({ id: p.garment.id, status: "error", error: e instanceof Error ? e.message : String(e) }); }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const rec = !person.file ? RECORDED_TRYON[p.garment.id] : undefined; // a real earlier render of the sample model, labelled
+      if (e instanceof FallbackError && rec) setState({ id: p.garment.id, status: "done", url: rec, recorded: true, error: msg });
+      else setState({ id: p.garment.id, status: "error", error: `Live try-on unavailable: ${msg.replace(/\.?$/, ".")}` });
+    }
   }
   const s = state?.id === pick.garment.id ? state : undefined;
 
@@ -63,6 +69,11 @@ export function TryOn({ picks, skin, mode }: { picks?: GarmentPick[]; skin?: str
                 <Photo name={pick.garment.id} sizes="64px" className="h-16 w-14 shrink-0 rounded-lg" />
                 <p className="text-[0.82rem] leading-snug">Demo mode: no render is faked. With a YouCam key, Clothes VTO puts <b>{pick.garment.name}</b> on this photo (2 units).</p>
               </div>
+            )}
+            {s?.status === "done" && (
+              <p className="absolute left-3 top-3 rounded-full bg-ink/80 px-3 py-1 text-[0.72rem] text-paper backdrop-blur" data-testid={s.recorded ? "tryon-recorded" : "tryon-live"}>
+                {s.recorded ? `Recorded YouCam render (live unavailable: ${s.error?.replace(/\.$/, "")})` : "Live render · YouCam Clothes VTO"}
+              </p>
             )}
             {s?.status === "error" && <p className="absolute inset-x-3 bottom-3 rounded-2xl bg-clay p-3 text-sm text-paper">{s.error}</p>}
           </div>

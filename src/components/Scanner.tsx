@@ -17,7 +17,7 @@ const PHASE_TEXT: Record<string, string> = {
 };
 
 export function Scanner({ shea }: { shea: Shea }) {
-  const { phase, subject, skin, tone, resultMode } = shea;
+  const { phase, subject, skin, tone, resultMode, recordedAt } = shea;
   const reduce = useReducedMotion();
   const [mask, setMask] = useState<string>();
   const scanning = phase === "preparing" || phase === "uploading" || phase === "reading";
@@ -30,7 +30,7 @@ export function Scanner({ shea }: { shea: Shea }) {
       <figure className="relative aspect-[3/4] overflow-hidden rounded-[1.6rem] bg-ink shadow-[0_30px_60px_-30px_rgba(29,20,15,.55)]">
         <img {...set} sizes="(min-width: 1024px) 26vw, (min-width: 640px) 45vw, 92vw" alt={sample ? "Sample portrait used for the demo scan" : "Your photo"}
           fetchPriority="high" decoding="async" className="h-full w-full object-cover" />
-        {(mask || skin?.overlayUrl) && resultMode === "live" && (
+        {(mask || skin?.overlayUrl) && resultMode !== "demo" && (
           <img src={mask ?? skin!.overlayUrl} alt="" className="absolute inset-0 h-full w-full object-cover mix-blend-screen opacity-80" />
         )}
         {/* scan beam */}
@@ -77,7 +77,7 @@ export function Scanner({ shea }: { shea: Shea }) {
         <ol className="mt-3 flex-1 space-y-[0.55rem]" data-testid="scores">
           {(skin ? scores : PLACEHOLDER).map((s, i) => (
             <li key={s.concern}>
-              <button type="button" disabled={!s.maskUrl || resultMode !== "live"} onClick={() => setMask(mask === s.maskUrl ? undefined : s.maskUrl)}
+              <button type="button" disabled={!s.maskUrl || resultMode === "demo"} onClick={() => setMask(mask === s.maskUrl ? undefined : s.maskUrl)}
                 className="group grid w-full grid-cols-[1fr_auto] items-center gap-x-3 text-left disabled:cursor-default">
                 <span className="truncate text-[0.86rem] text-ink-2">{CONCERN_LABEL[s.concern]}</span>
                 <span className="tnum text-[0.86rem] font-semibold">{skin ? s.score : "··"}</span>
@@ -98,6 +98,12 @@ export function Scanner({ shea }: { shea: Shea }) {
             <p className="mt-1 text-sm text-ink-2"><span className="display text-xl text-ink">{cap(depthOf(tone.skin))}</span>, {undertoneOf(tone.skin)} undertone</p>
           ) : <p className="mt-1 text-sm text-ink-3">Measured by YouCam Facial Color Tones</p>}
         </div>
+        {resultMode === "recorded" && skin && (
+          <p className="mt-3 text-[0.74rem] leading-snug text-ink-3" data-testid="recorded-label">Real YouCam result for this sample photo, recorded {recordedAt ? new Date(recordedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "earlier"}. Scan your selfie for a live reading.</p>
+        )}
+        {resultMode === "live" && skin && (
+          <p className="mt-3 text-[0.74rem] leading-snug text-ink-3" data-testid="live-label">Live result from the YouCam API, for this photo.</p>
+        )}
         {resultMode === "demo" && skin && (
           <p className="mt-3 text-[0.74rem] leading-snug text-clay" data-testid="demo-label">Demo: sample results, not a reading of this person. Live scans run once a YouCam key is set.</p>
         )}

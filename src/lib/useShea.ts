@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Mode, Plan, SkinResult, ToneResult } from "../../shared/types";
-import { getStatus, makePlan, scan, toJpegDataUrl } from "./api";
+import type { Mode, Plan, ResultMode, SkinResult, ToneResult } from "../../shared/types";
+import { FallbackError, getStatus, makePlan, scan, toJpegDataUrl } from "./api";
 
 export type Phase = "idle" | "preparing" | "uploading" | "reading" | "planning" | "done" | "error";
 export interface Subject { kind: "sample" | "user"; src: string }
@@ -17,31 +17,36 @@ export function useShea() {
   const [plan, setPlan] = useState<Plan>();
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
-  const [resultMode, setResultMode] = useState<Mode>();
+  const [resultMode, setResultMode] = useState<ResultMode>();
+  const [recordedAt, setRecordedAt] = useState<string>();
   const run = useRef(0);
 
   useEffect(() => { getStatus().then((s) => setMode(s.mode)).catch(() => setMode("demo")); }, []);
 
-  const start = useCallback(async (next: Subject, file?: Blob) => {
+  const start = useCallback(async (next: Subject, file?: Blob): Promise<void> => {
     const id = ++run.current; const live = () => id === run.current;
     setSubject(next); setError(undefined); setSkin(undefined); setTone(undefined); setPlan(undefined);
     try {
       setPhase("preparing");
-      // The sample is sent as bytes too, so YouCam never has to fetch from our (possibly protected) domain.
-      const image = mode === "live" ? await toJpegDataUrl(file ?? "/src/face-scan.jpg") : undefined;
+      // Only a visitor's own photo goes to YouCam. The sample shows a recorded real result, so page loads never spend units.
+      const image = mode === "live" && next.kind === "user" && file ? await toJpegDataUrl(file) : undefined;
       if (!live()) return;
       setPhase("uploading"); const t0 = performance.now();
-      const pending = scan(image);
+      const pending = scan(image); pending.catch(() => {}); // handled below; avoids an unhandled-rejection report while the scan phase animates
       await wait(700); if (live()) setPhase("reading");
       const r = await pending;
       const minShow = 2400 - (performance.now() - t0); if (minShow > 0) await wait(minShow); // let the scan read as a scan
       if (!live()) return;
-      setResultMode(r.mode); setSkin(r.skin); setTone(r.tone); setPhase("planning");
+      setResultMode(r.mode); setRecordedAt(r.recordedAt); setSkin(r.skin); setTone(r.tone); setPhase("planning");
       const p = await makePlan(r.skin, r.tone); await wait(500);
       if (!live()) return;
       setPlan(p); setPhase("done");
     } catch (e) {
       if (!live()) return;
+      if (e instanceof FallbackError && next.kind === "user") { // units out, a cap hit or YouCam errored: keep the product working
+        setNotice(`Live scan unavailable: ${e.message.replace(/\.?$/, ".")} Showing the labelled sample instead.`);
+        return start(SAMPLE);
+      }
       setError(e instanceof Error ? e.message : String(e)); setPhase("error");
     }
   }, [mode]);
@@ -57,6 +62,6 @@ export function useShea() {
     start({ kind: "user", src: URL.createObjectURL(file) }, file);
   }, [start, subject, mode]);
 
-  return { mode, phase, subject, skin, tone, plan, error, notice, resultMode, start, useFile };
+  return { mode, phase, subject, skin, tone, plan, error, notice, resultMode, recordedAt, start, useFile };
 }
 export type Shea = ReturnType<typeof useShea>;
