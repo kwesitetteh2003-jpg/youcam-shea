@@ -44,7 +44,7 @@ npm run build            # type-check, Vite build, prerender the first paint
 
 All photos are from Pexels, used under the Pexels licence:
 
-- face: [Darksight Image / Pexels](https://www.pexels.com/photo/portrait-of-a-woman-with-yellow-headscarf-32222061/)
+- face: [Evlogia Pictures / Pexels](https://www.pexels.com/photo/portrait-of-beautiful-woman-smiling-12626141/)
 - body: [Marlon Schmeiski / Pexels](https://www.pexels.com/photo/african-woman-posing-in-a-studio-20610322/)
 - mirror: [Ron Lach / Pexels](https://www.pexels.com/photo/woman-with-black-hair-and-red-lipstick-9442300/)
 - patches: [Anna Shvets / Pexels](https://www.pexels.com/photo/young-peaceful-black-woman-with-golden-patches-under-eyes-3852192/)

@@ -1,0 +1,87 @@
+{
+ "at": "2026-10-29T08:32:43.074Z",
+ "scan": {
+  "mode": "live",
+  "skinTask": "6jmIJvAYk9ckfMrTDjEccVXvkagd7Foou1842vqsIzWEoEWYSAAdStFI2PQripD8SpcgV8WTLEnG8Q2PXjtLzQ",
+  "toneTask": "6jmIJvAYk9ckfMrTDjEccVXvkagd7Foou1842vqsIzVhXb3gYgqZrCwdkgtbbRehaWDS9eILM6KP1umZGeEfHw"
+ },
+ "tryon": {
+  "mode": "live",
+  "task": "Ind76yGOZ6xhccPqbTeZSo05EULRnKzKWMFfv1G6UcNvubbydOXzoblggON3kIH3Gi4M447Ki6l9hDTl1ySvww"
+ },
+ "polls": [
+  {
+   "kind": "skin",
+   "result": {
+    "scores": [
+     {
+      "concern": "pore",
+      "score": 78,
+      "raw": 74.15083885192871,
+      "maskUrl": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123669123883/v2/aeMNNB0KmUIP8rnQ996tC5Q/1278eb10-b224-495d-a564-3fac035806c8_pore_output.jpg?<presigned, expired>"
+     },
+     {
+      "concern": "age_spot",
+      "score": 96,
+      "raw": 98.46406555175781,
+      "maskUrl": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123669123883/v2/aeMNNB0KmUIP8rnQ996tC5Q/1278eb10-b224-495d-a564-3fac035806c8_age_spot_output.jpg?<presigned, expired>"
+     },
+     {
+      "concern": "texture",
+      "score": 70,
+      "raw": 56.73350691795349,
+      "maskUrl": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123669123883/v2/aeMNNB0KmUIP8rnQ996tC5Q/1278eb10-b224-495d-a564-3fac035806c8_texture_output.jpg?<presigned, expired>"
+     },
+     {
+      "concern": "oiliness",
+      "score": 65,
+      "raw": 43.60377502441406,
+      "maskUrl": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123669123883/v2/aeMNNB0KmUIP8rnQ996tC5Q/1278eb10-b224-495d-a564-3fac035806c8_oiliness_output.jpg?<presigned, expired>"
+     },
+     {
+      "concern": "radiance",
+      "score": 93,
+      "raw": 95.78335881233215,
+      "maskUrl": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123669123883/v2/aeMNNB0KmUIP8rnQ996tC5Q/1278eb10-b224-495d-a564-3fac035806c8_radiance_output.jpg?<presigned, expired>"
+     },
+     {
+      "concern": "dark_circle_v2",
+      "score": 83,
+      "raw": 91.38551950454712,
+      "maskUrl": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123669123883/v2/aeMNNB0KmUIP8rnQ996tC5Q/1278eb10-b224-495d-a564-3fac035806c8_dark_circle_v2_output.jpg?<presigned, expired>"
+     },
+     {
+      "concern": "acne",
+      "score": 83,
+      "raw": 84.99839999999999,
+      "maskUrl": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123669123883/v2/aeMNNB0KmUIP8rnQ996tC5Q/1278eb10-b224-495d-a564-3fac035806c8_acne_output.jpg?<presigned, expired>"
+     },
+     {
+      "concern": "moisture",
+      "score": 71,
+      "raw": 53.17685604095459,
+      "maskUrl": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123669123883/v2/aeMNNB0KmUIP8rnQ996tC5Q/1278eb10-b224-495d-a564-3fac035806c8_moisture_output.jpg?<presigned, expired>"
+     }
+    ]
+   }
+  },
+  {
+   "kind": "tone",
+   "result": {
+    "skin": "#79563B",
+    "lip": "#CB8167",
+    "eye": "#0F0A07",
+    "eyeName": "Brown",
+    "hair": "#B56637",
+    "hairName": "Auburn"
+   }
+  },
+  {
+   "kind": "cloth",
+   "result": {
+    "url": "https://yce-us.s3-accelerate.amazonaws.com/ttl30/518520467531772904/123668842754/v2/aeMNNB0KmUIP8rnQ996tC5Q/a1f49731-c91d-4b85-b45b-a471dfda5eb6.jpg?<presigned, expired>"
+   }
+  }
+ ],
+ "note": "Desktop made one paid scan of public/src/face-scan.jpg; try-on replays the real cloth task from 08:27 (Accra); mobile replays the same task ids (free)."
+}

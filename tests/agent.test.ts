@@ -5,9 +5,10 @@ import { DEMO_SKIN, DEMO_TONE } from "../shared/fixtures";
 import { depthOf, undertoneOf, contrast } from "../shared/color";
 
 describe("colour", () => {
-  it("reads the demo tone as deep and neutral", () => {
+  it("reads the demo tone (YouCam's reading of the sample) as deep and warm", () => {
     expect(depthOf(DEMO_TONE.skin)).toBe("deep");
-    expect(undertoneOf(DEMO_TONE.skin)).toBe("neutral");
+    expect(undertoneOf(DEMO_TONE.skin)).toBe("warm");
+    expect(undertoneOf("#5B3522")).toBe("neutral");
     expect(undertoneOf("#c68642")).toBe("warm");
     expect(depthOf("#F1D3C2")).toBe("light");
   });
