@@ -13,6 +13,17 @@ A small, transparent **agent** (`shared/agent.ts`) turns those readings into a p
 - It **refuses** products Ghana FDA does not permit in cosmetics: hydroquinone, mercury and potent steroids, each with its reason.
 - It ranks garments by WCAG contrast against the measured skin colour, then gives you a starter basket priced in GH₵.
 
+## Try it (no login, free)
+
+**Live:** https://youcam-glow.vercel.app. It works on a phone or a desktop browser, and there is nothing to install.
+
+1. The page opens with a real YouCam result for the sample portrait. This result is recorded, so it costs nothing.
+2. Tap **Scan my selfie** and send a front-facing photo. Shea makes a live YouCam Skin Analysis + Skin Tone call and shows 8 scores plus your measured skin colour.
+3. Scroll to **The plan, and why** for the routine, the refused products and the GH₵ basket.
+4. In **Try-on**, press **Try it on** to get a live YouCam Clothes VTO render on the sample model. You can also use your own full-length photo.
+
+Live calls draw on a hackathon credit balance with daily caps. If a cap is reached, the page says so and shows the labelled sample result instead of failing.
+
 ## Run it
 
 ```bash
@@ -56,6 +67,16 @@ All photos are from Pexels, used under the Pexels licence:
 - g-olive-shirt: [Ron Lach / Pexels](https://www.pexels.com/photo/person-holding-green-dress-shirt-9594952/)
 - g-rose-shirt: [MART PRODUCTION / Pexels](https://www.pexels.com/photo/hanging-of-pink-shirt-on-a-clothing-rack-9558711/)
 - g-floral-dress: [Lisa Fotios / Pexels](https://www.pexels.com/photo/dress-hanging-and-drying-on-windows-16427119/)
+
+## Demo video credits
+
+`video/shea-demo.mp4` (script in `video/script.md`). App footage is a real screen recording of the live site. Extra stock photos, used under the Pexels licence:
+
+- Accra skyline: [Prince Enos / Pexels](https://www.pexels.com/photo/31782030/)
+- Accra street: [Michael Quaynor / Pexels](https://www.pexels.com/photo/13699253/)
+- Skincare shelf: [Polina Tankilevitch / Pexels](https://www.pexels.com/photo/3735631/)
+
+Voice: Microsoft Edge neural TTS (en-NG-EzinneNeural). Music: an original ambient pad synthesised for the video. Fonts: Fraunces and Inter (OFL).
 
 ## Licence
 

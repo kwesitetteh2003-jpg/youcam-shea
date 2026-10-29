@@ -6,3 +6,6 @@ dist
 .vercel
 *.log
 test-results
+
+# demo video is published on YouTube, not in git
+video/*.mp4
