@@ -1,6 +1,6 @@
 # Shea: a skin scan that knows deep skin
 
-Shea is a skincare and style assistant built for melanin-rich skin, starting in Accra. It runs on the **YouCam API** (Perfect Corp.):
+Shea is a skincare and style guide built for melanin-rich skin, starting in Accra. It runs on the **YouCam API** (Perfect Corp.):
 
 1. **Skin Analysis** (`/s2s/v2.0/task/skin-analysis`, SD, 8 concerns, 12 units) scores dark marks (PIH), under-eye darkness, oil, breakouts, texture, pores, hydration and radiance.
 2. **Skin Tone Analysis** (`/task/skin-tone-analysis`, 20 units) returns the measured skin colour.

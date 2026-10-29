@@ -9,3 +9,7 @@ test-results
 
 # demo video is published on YouTube, not in git
 video/*.mp4
+
+# local submission drafts
+submission.md
+video/youtube.md
