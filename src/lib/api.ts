@@ -8,7 +8,9 @@ async function j<T>(r: Response): Promise<T> {
   if (!r.ok) { const m = (b as { error?: string }).error || `Request failed (${r.status})`; throw (b as { fallback?: boolean }).fallback ? new FallbackError(m) : new Error(m); }
   return b as T;
 }
-export const getStatus = () => fetch("/api/status").then((r) => j<{ mode: Mode; apis: string[] }>(r));
+/** Header pill: "live" only when YouCam actually accepts the key (free credit check), so a rejected key never shows Live. */
+export const getStatus = () =>
+  fetch("/api/health").then((r) => j<{ youcam: "ok" | "rejected" | "unreachable" | "no_key" }>(r)).then((h): { mode: Mode } => ({ mode: h.youcam === "ok" ? "live" : "demo" }));
 
 /** Downscale to <= 1280px and re-encode as JPEG so uploads stay small and EXIF-free. */
 export async function toJpegDataUrl(src: string | Blob, max = 1280): Promise<string> {
